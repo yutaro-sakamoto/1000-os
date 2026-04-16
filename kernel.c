@@ -30,15 +30,6 @@ void putchar(char ch) {
     sbi_call(ch, 0, 0, 0, 0, 0, 0, 1 /* Console Putchar */);
 }
 
-void kernel_main(void) {
-    memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
-
-    printf("\n\nHello %s\n", "World!");
-    printf("1 + 2 = %d, %x\n", 1 + 2, 0x1234abcd);
-
-    PANIC("booted!");
-}
-
 __attribute__((section(".text.boot")))
 __attribute__((naked))
 void boot(void) {
@@ -135,4 +126,13 @@ void handle_trap(struct trap_frame *f) {
     uint32_t user_pc = READ_CSR(sepc);
 
     PANIC("unexpected trap scause=%x, stval=%x, spec%x\n", scause, stval, user_pc);
+}
+
+void kernel_main(void) {
+    memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
+
+    WRITE_CSR(stvec, (uint32_t) kernel_entry);
+    __asm__ __volatile__("unimp");
+
+    PANIC("booted!");
 }
