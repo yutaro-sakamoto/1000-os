@@ -216,15 +216,46 @@ struct process *create_process(uint32_t pc) {
     return proc;
 }
 
+void delay(void) {
+    for(int i=0; i<300000000; i++) {
+        __asm__ __volatile__("nop");
+    }
+}
+
+struct process *proc_a;
+struct process *proc_b;
+
+void proc_a_entry(void) {
+    printf("starting process A\n");
+    while(1) {
+        putchar('A');
+        switch_context(&proc_a->sp, &proc_b->sp);
+        delay();
+    }
+}
+
+void proc_b_entry(void) {
+    printf("satarting process B\n");
+    while (1) {
+        putchar('B');
+        switch_context(&proc_b->sp, &proc_a->sp);
+        delay();
+    }
+}
+
 void kernel_main(void) {
     memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
 
     WRITE_CSR(stvec, (uint32_t) kernel_entry);
 
-    paddr_t paddr0 = alloc_pages(2);
-    paddr_t paddr1 = alloc_pages(1);
-    printf("alloc_page test: paddr0=%x\n", paddr0);
-    printf("alloc_page test: paddr1=%x\n", paddr1);
+    //paddr_t paddr0 = alloc_pages(2);
+    //paddr_t paddr1 = alloc_pages(1);
+    //printf("alloc_page test: paddr0=%x\n", paddr0);
+    //printf("alloc_page test: paddr1=%x\n", paddr1);
 
-    PANIC("booted!");
+    proc_a = create_process((uint32_t) proc_a_entry);
+    proc_b = create_process((uint32_t) proc_b_entry);
+    proc_a_entry();
+
+    PANIC("unreachable here!");
 }
