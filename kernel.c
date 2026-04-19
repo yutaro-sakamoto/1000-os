@@ -222,6 +222,28 @@ void delay(void) {
     }
 }
 
+struct process *current_proc;
+struct process *idle_proc;
+
+void yield(void) {
+    struct process *next = idle_proc;
+    for(int i=0; i<PROCS_MAX; i++) {
+        struct process *proc = &procs[(current_proc->pid + i) % PROCS_MAX];
+        if(proc->state == PROC_RUNNABLE && proc->pid > 0) {
+            next = proc;
+            break;
+        }
+    }
+
+    if(next == current_proc) {
+        return;
+    }
+
+    struct process *prev = current_proc;
+    current_proc = next;
+    switch_context(&prev->sp, &next->sp);
+}
+
 struct process *proc_a;
 struct process *proc_b;
 
@@ -229,7 +251,7 @@ void proc_a_entry(void) {
     printf("starting process A\n");
     while(1) {
         putchar('A');
-        switch_context(&proc_a->sp, &proc_b->sp);
+        yield();
         delay();
     }
 }
@@ -238,7 +260,7 @@ void proc_b_entry(void) {
     printf("satarting process B\n");
     while (1) {
         putchar('B');
-        switch_context(&proc_b->sp, &proc_a->sp);
+        yield();
         delay();
     }
 }
@@ -253,9 +275,13 @@ void kernel_main(void) {
     //printf("alloc_page test: paddr0=%x\n", paddr0);
     //printf("alloc_page test: paddr1=%x\n", paddr1);
 
+    idle_proc = create_process((uint32_t) NULL);
+    idle_proc->pid = 0;
+    current_proc = idle_proc;
+
     proc_a = create_process((uint32_t) proc_a_entry);
     proc_b = create_process((uint32_t) proc_b_entry);
-    proc_a_entry();
 
+    yield();
     PANIC("unreachable here!");
 }
