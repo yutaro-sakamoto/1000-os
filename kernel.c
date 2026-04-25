@@ -318,13 +318,13 @@ void kernel_main(void) {
     printf("alloc_page test: paddr0=%x\n", paddr0);
     printf("alloc_page test: paddr1=%x\n", paddr1);
 
-    //idle_proc = create_process((uint32_t) NULL);
-    //idle_proc->pid = 0;
-    //current_proc = idle_proc;
+    idle_proc = create_process((uint32_t) NULL);
+    idle_proc->pid = 0;
+    current_proc = idle_proc;
 
-    //proc_a = create_process((uint32_t) proc_a_entry);
-    //proc_b = create_process((uint32_t) proc_b_entry);
+    proc_a = create_process((uint32_t) proc_a_entry);
+    proc_b = create_process((uint32_t) proc_b_entry);
 
-    //yield();
+    yield();
     PANIC("booted!");
 }
