@@ -308,6 +308,12 @@ void proc_b_entry(void) {
     }
 }
 
+extern char _binary_shell_bin_start[], _binary_shell_bin_size[];
+
+void user_entry(void) {
+    PANIC("not yet implemented");
+}
+
 void kernel_main(void) {
     memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
 

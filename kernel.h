@@ -82,3 +82,5 @@ struct process procs[PROCS_MAX];
 #define PAGE_U (1 << 4)
 
 #define PAGE_SIZE 4096
+
+#define USER_BASE 0x1000000
