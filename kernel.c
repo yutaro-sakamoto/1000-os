@@ -207,7 +207,9 @@ void map_page(uint32_t *table1, uint32_t vaddr, paddr_t paddr, uint32_t flags) {
 
 extern char __kernel_base[];
 
-struct process *create_process(uint32_t pc) {
+void user_entry(void);
+
+struct process *create_process(const void *image, size_t image_size) {
     struct process *proc = NULL;
     int i;
     for(i=0; i<PROCS_MAX; i++) {
@@ -233,13 +235,25 @@ struct process *create_process(uint32_t pc) {
     *--sp = 0;                      // s2
     *--sp = 0;                      // s1
     *--sp = 0;                      // s0
-    *--sp = (uint32_t) pc;          // ra
+    *--sp = (uint32_t) user_entry;  // ra
 
     uint32_t* page_table = (uint32_t *)alloc_pages(1);
 
     for(paddr_t paddr = (paddr_t) __kernel_base;
         paddr < (paddr_t) __free_ram_end; paddr += PAGE_SIZE) {
         map_page(page_table, paddr, paddr, PAGE_R | PAGE_W | PAGE_X);
+    }
+
+    for(uint32_t off = 0; off < image_size; off += PAGE_SIZE) {
+        paddr_t page = alloc_pages(1);
+
+        size_t remaining = image_size - off;
+        size_t copy_size = PAGE_SIZE <= remaining ? PAGE_SIZE : remaining;
+
+        memcpy((void*)page, (const char *)image + off, copy_size);
+
+        map_page(page_table, USER_BASE + off, page,
+            PAGE_U | PAGE_R | PAGE_W | PAGE_X);
     }
 
     proc->pid = i + 1;
@@ -319,17 +333,16 @@ void kernel_main(void) {
 
     WRITE_CSR(stvec, (uint32_t) kernel_entry);
 
-    paddr_t paddr0 = alloc_pages(2);
-    paddr_t paddr1 = alloc_pages(1);
-    printf("alloc_page test: paddr0=%x\n", paddr0);
-    printf("alloc_page test: paddr1=%x\n", paddr1);
+    //paddr_t paddr0 = alloc_pages(2);
+    //paddr_t paddr1 = alloc_pages(1);
+    //printf("alloc_page test: paddr0=%x\n", paddr0);
+    //printf("alloc_page test: paddr1=%x\n", paddr1);
 
-    idle_proc = create_process((uint32_t) NULL);
+    idle_proc = create_process(NULL, 0);
     idle_proc->pid = 0;
     current_proc = idle_proc;
 
-    proc_a = create_process((uint32_t) proc_a_entry);
-    proc_b = create_process((uint32_t) proc_b_entry);
+    create_process(_binary_shell_bin_start, (size_t) _binary_shell_bin_size);
 
     yield();
     PANIC("booted!");
