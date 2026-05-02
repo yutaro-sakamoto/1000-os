@@ -84,3 +84,5 @@ struct process procs[PROCS_MAX];
 #define PAGE_SIZE 4096
 
 #define USER_BASE 0x1000000
+
+#define SSTATUS_SPIE (1 << 5)
