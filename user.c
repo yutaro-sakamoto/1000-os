@@ -6,10 +6,6 @@ __attribute__((noreturn)) void exit(void) {
     for(;;);
 }
 
-void putchar(char ch) {
-    // WIP
-}
-
 __attribute((section(".text.start")))
 __attribute((naked))
 void start(void) {
@@ -31,4 +27,8 @@ int syscall(int sysno, int arg0, int arg1, int arg2) {
         : "memory");
     
     return a0;
+}
+
+void putchar(char ch) {
+    syscall(SYS_PUTCHAR, ch, 0, 0);
 }
