@@ -86,3 +86,5 @@ struct process procs[PROCS_MAX];
 #define USER_BASE 0x1000000
 
 #define SSTATUS_SPIE (1 << 5)
+
+#define SCAUSE_ECALL 8
