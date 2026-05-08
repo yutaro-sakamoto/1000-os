@@ -144,6 +144,8 @@ void handle_trap(struct trap_frame *f) {
     } else {
         PANIC("unexpected trap scause=%x, stval=%x, spec%x\n", scause, stval, user_pc);
     }
+
+    WRITE_CSR(sepc, user_pc);
 }
 
 extern char __free_ram[], __free_ram_end[];
