@@ -202,6 +202,11 @@ __attribute__((naked)) void switch_context(uint32_t *prev_sp, uint32_t *next_sp)
     );
 }
 
+long getchar(void) {
+    struct sbiret ret = sbi_call(0, 0, 0, 0, 0, 0, 0, 2);
+    return ret.error;
+}
+
 void map_page(uint32_t *table1, uint32_t vaddr, paddr_t paddr, uint32_t flags) {
     if(!is_aligned(vaddr, PAGE_SIZE)) {
         PANIC("unaligned vaddr %x", vaddr);
