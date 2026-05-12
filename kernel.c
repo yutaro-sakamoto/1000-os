@@ -123,6 +123,9 @@ void kernel_entry(void) {
     );
 }
 
+long getchar(void);
+void yield(void);
+
 void handle_syscall(struct trap_frame *f) {
     switch(f->a3) {
         case SYS_GETCHAR:
