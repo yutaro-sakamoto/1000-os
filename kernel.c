@@ -7,6 +7,9 @@ typedef uint32_t size_t;
 
 extern char __bss[], __bss_end[], __stack_top[];
 
+struct process *current_proc;
+struct process *idle_proc;
+
 struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3, long arg4,
                        long arg5, long fid, long eid) {
     register long a0 __asm__("a0") = arg0;
@@ -140,6 +143,12 @@ void handle_syscall(struct trap_frame *f) {
             break;
         case SYS_PUTCHAR:
             putchar(f->a0);
+            break;
+        case SYS_EXIT:
+            printf("process %d exited\n", current_proc->pid);
+            current_proc->state = PROC_EXITED;
+            yield();
+            PANIC("unreachable");
             break;
         default:
             PANIC("unexpected syscall a3=%x\n", f->a3);
@@ -303,9 +312,6 @@ void delay(void) {
         __asm__ __volatile__("nop");
     }
 }
-
-struct process *current_proc;
-struct process *idle_proc;
 
 void yield(void) {
     struct process *next = idle_proc;

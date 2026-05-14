@@ -88,3 +88,5 @@ struct process procs[PROCS_MAX];
 #define SSTATUS_SPIE (1 << 5)
 
 #define SCAUSE_ECALL 8
+
+#define PROC_EXITED 2
