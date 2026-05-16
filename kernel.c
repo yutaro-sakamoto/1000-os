@@ -393,5 +393,5 @@ void kernel_main(void) {
     create_process(_binary_shell_bin_start, (size_t) _binary_shell_bin_size);
 
     yield();
-    PANIC("booted!");
+    PANIC("switched to idle process");
 }
