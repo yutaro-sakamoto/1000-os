@@ -288,6 +288,8 @@ struct process *create_process(const void *image, size_t image_size) {
         map_page(page_table, paddr, paddr, PAGE_R | PAGE_W | PAGE_X);
     }
 
+    map_page(page_table, VIRTIO_BLK_PADDR, VIRTIO_BLK_PADDR, PAGE_R | PAGE_W);
+
     for(uint32_t off = 0; off < image_size; off += PAGE_SIZE) {
         paddr_t page = alloc_pages(1);
 
